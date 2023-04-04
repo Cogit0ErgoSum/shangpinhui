@@ -30,23 +30,11 @@
           <div class="sui-navbar">
             <div class="navbar-inner filter">
               <ul class="sui-nav">
-                <li class="active">
-                  <a href="#">综合</a>
+                <li :class="{ active: isOne }" @click="changeOrder('1')">
+                  <a>综合<span v-show="isOne" class="iconfont" :class="{ 'icon-UP': isAsc, 'icon-DOWN': isDesc }"></span></a>
                 </li>
-                <li>
-                  <a href="#">销量</a>
-                </li>
-                <li>
-                  <a href="#">新品</a>
-                </li>
-                <li>
-                  <a href="#">评价</a>
-                </li>
-                <li>
-                  <a href="#">价格⬆</a>
-                </li>
-                <li>
-                  <a href="#">价格⬇</a>
+                <li :class="{ active: isTwo }" @click="changeOrder('2')">
+                  <a>价格<span v-show="isTwo" class="iconfont" :class="{ 'icon-UP': isAsc, 'icon-DOWN': isDesc }"></span></a>
                 </li>
               </ul>
             </div>
@@ -57,7 +45,9 @@
                 <div class="list-wrap">
                   <div class="p-img">
                     <a href="item.html" target="_blank">
-                      <img :src="good.defaultImg" />
+                      <router-link :to="`/detail/${good.id}`">
+                        <img :src="good.defaultImg" />
+                      </router-link>
                     </a>
                   </div>
                   <div class="price">
@@ -83,35 +73,9 @@
               
             </ul>
           </div>
-          <div class="fr page">
-            <div class="sui-pagination clearfix">
-              <ul>
-                <li class="prev disabled">
-                  <a href="#">«上一页</a>
-                </li>
-                <li class="active">
-                  <a href="#">1</a>
-                </li>
-                <li>
-                  <a href="#">2</a>
-                </li>
-                <li>
-                  <a href="#">3</a>
-                </li>
-                <li>
-                  <a href="#">4</a>
-                </li>
-                <li>
-                  <a href="#">5</a>
-                </li>
-                <li class="dotted"><span>...</span></li>
-                <li class="next">
-                  <a href="#">下一页»</a>
-                </li>
-              </ul>
-              <div><span>共10页&nbsp;</span></div>
-            </div>
-          </div>
+          
+          <Pagenation :pageNo="searchParams.pageNo" :pageSize="searchParams.pageSize" :total="total" :continues="5" @getPageNo="getPageNo"></Pagenation>
+
         </div>
       </div>
     </div>
@@ -120,7 +84,7 @@
 
 <script>
   import SearchSelector from './SearchSelector/SearchSelector'
-  import { mapGetters } from 'vuex';
+  import { mapGetters, mapState } from 'vuex';
 
   export default {
     name: 'Search',
@@ -132,7 +96,7 @@
           category3Id: "",
           categoryName: "",
           keyword: "",
-          order: "",
+          order: "2",
           pageNo: "1",
           pageSize: "3",
           props: [],
@@ -152,7 +116,22 @@
       
     },
     computed: {
-      ...mapGetters('search', {goodsList: 'goodsList'}),                 
+      ...mapGetters('search', {goodsList: 'goodsList'}),  
+
+      ...mapState({total: state => state.search.searchList.total}),
+
+      isOne() {
+        return this.searchParams.order.indexOf("1") != -1;
+      },
+      isTwo() {
+        return this.searchParams.order.indexOf("2") != -1;
+      },
+      isAsc() {
+        return this.searchParams.order.indexOf("asc") != -1;
+      },
+      isDesc() {
+        return this.searchParams.order.indexOf("desc") != -1;
+      },               
     },
     methods: {
       getData() {
@@ -205,7 +184,32 @@
         }
 
         this.getData();
+      },
+
+      changeOrder(flag) {
+      
+      let originOrder = this.searchParams.order;
+      let orginsFlag = originOrder.split(":")[0];
+      let originSort = originOrder.split(":")[1];
+      
+      let newOrder = "";
+      
+      if (flag == orginsFlag) {
+        newOrder = `${orginsFlag}:${originSort == "desc" ? "asc" : "desc"}`;
+      } else {
+        
+        newOrder = `${flag}:${"desc"}`;
       }
+      
+      this.searchParams.order = newOrder;
+      
+      this.getData();
+    },
+
+    getPageNo(pageNo) {
+      this.searchParams.pageNo = pageNo;
+      this.getData();
+    }
 
     },
     watch: {

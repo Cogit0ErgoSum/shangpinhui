@@ -16,4 +16,7 @@ VueRouter.prototype.push= function(location, resolve, reject) {
 export default new VueRouter({
     mode: 'history',
     routes,
+    scrollBehavior(to, from, savedPosition) {
+        return { y : 0 };
+    }
 })
